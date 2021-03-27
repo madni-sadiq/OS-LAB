@@ -53,6 +53,11 @@ char **tokenize_and(char *line)
     		token_and[tokenIndex++] = '\n';
     		token_and[tokenIndex] = '\0';
     	}
+    	else if (readChar == '&'){
+    		token_and[tokenIndex++] = ' ';
+    		token_and[tokenIndex++] = '&';
+    		token_and[tokenIndex] = '\0';
+    	}
     	else
       		token_and[tokenIndex] = '\0';
       if (tokenIndex != 0){
@@ -83,7 +88,8 @@ void execCmd(char** tokens)
 
 	pid_t pid;
 	pid = fork();
-		
+	
+	
 		// Forking a child
 		if (pid == -1){
 			printf("\nShell: Failed forking child");
@@ -99,6 +105,32 @@ void execCmd(char** tokens)
 			wait(NULL);
 			return;
 		}
+}
+
+void execCmd_and(char** tokens)
+{
+
+	pid_t pid;
+	pid = fork();
+		// Forking a child
+		if (pid == -1){
+			printf("\nShell: Failed forking child");
+			return;
+		}
+		else if (pid == 0){
+			
+			
+			if (execvp(tokens[0], tokens) < 0){
+				printf("\nShell: Incorrect command");
+			}
+			exit(0);
+		}
+		else {// waiting for child to terminate
+			printf("pid: %d", pid);
+			//wait(NULL);
+			return;
+		}
+		
 }
 
 int main(int argc, char* argv[]) {
@@ -135,6 +167,12 @@ int main(int argc, char* argv[]) {
 		/* END: TAKING INPUT */
 		
 		line[strlen(line)] = '\n'; //terminate with new line
+		if (line[strlen(line)-2] == '&'){
+			line[strlen(line)-2] = '\n';
+			line[strlen(line)-1] = '\0';
+			execCmd_and(tokenize(line));
+			continue;			
+		}
 		if (strlen(line) == 1)
 			continue;
 		tokens_and = tokenize_and(line);
@@ -144,14 +182,15 @@ int main(int argc, char* argv[]) {
 				continue;
 			else{	
 			tokens = tokenize(tokens_and[i]);
-			
-       		if (tokens[0][0] == 'c' && tokens[0][1] == 'd' & tokens[0][2] == '\0')
-				chdir(tokens[1]);	
+       		if (tokens[0][0] == 'c' && tokens[0][1] == 'd' & tokens[0][2] == '\0'){
+				if (chdir(tokens[1]) != 0)  
+ 				// so chdir will return -1  
+				perror("cd failed");	
+			}
 			else
 				execCmd(tokens);
-				
 			}
-			}
+		}
 		
 		for(int j=0;tokens[j]!=NULL;j++){
 			free(tokens[j]);
