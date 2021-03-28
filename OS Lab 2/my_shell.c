@@ -37,7 +37,9 @@ char **tokenize(char *line)
   tokens[tokenNo] = NULL ;
   return tokens;
 }
-
+/* Splits the string by & and returns the array of tokens
+*
+*/
 
 char **tokenize_and(char *line)
 {
@@ -74,7 +76,7 @@ char **tokenize_and(char *line)
   tokens_and[tokenNo] = NULL ;
   return tokens_and;
 }
-
+// function to print current directory
 void printDir() 
 { 
     char cwd[1024]; 
@@ -106,7 +108,7 @@ void execCmd(char** tokens)
 			return;
 		}
 }
-
+// function to execute command in background and print child process id 
 void execCmd_and(char** tokens)
 {
 
@@ -167,31 +169,31 @@ int main(int argc, char* argv[]) {
 		/* END: TAKING INPUT */
 		
 		line[strlen(line)] = '\n'; //terminate with new line
-		if (line[strlen(line)-2] == '&'){
+		if (line[strlen(line)-2] == '&'){ // if a command ends with & pass to execCmd_and to exceute in background 
 			line[strlen(line)-2] = '\n';
 			line[strlen(line)-1] = '\0';
 			execCmd_and(tokenize(line));
-			continue;			
+			continue;// return shell			
 		}
-		if (strlen(line) == 1)
+		if (strlen(line) == 1) // if no command is entered return shell
 			continue;
-		tokens_and = tokenize_and(line);
+		tokens_and = tokenize_and(line); // tokenizing sentence based on &  
 		
-		for(i = 0; tokens_and[i] != NULL;i++){
-			if (strlen(tokens_and[i]) == 1)
+		for(i = 0; tokens_and[i] != NULL;i++){ // executing each token
+			if (strlen(tokens_and[i]) == 1) // if no command is entered return shell
 				continue;
 			else{	
-			tokens = tokenize(tokens_and[i]);
-       		if (tokens[0][0] == 'c' && tokens[0][1] == 'd' & tokens[0][2] == '\0'){
+			tokens = tokenize(tokens_and[i]); // tokenizing based on space 
+       		if (tokens[0][0] == 'c' && tokens[0][1] == 'd' & tokens[0][2] == '\0'){ // if cd command
 				if (chdir(tokens[1]) != 0)  
  				// so chdir will return -1  
 				perror("cd failed");	
 			}
-			else
+			else // built-in commands
 				execCmd(tokens);
 			}
 		}
-		
+		// freeing memory allocated
 		for(int j=0;tokens[j]!=NULL;j++){
 			free(tokens[j]);
 		}
