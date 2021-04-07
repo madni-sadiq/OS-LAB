@@ -6,6 +6,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <sys/wait.h>
+#include <signal.h>
 
 #define MAX_INPUT_SIZE 1024
 #define MAX_TOKEN_SIZE 64
@@ -14,7 +15,7 @@
 /* Splits the string by space and returns the array of tokens
  *
  */
-
+typedef void (*sighandler_t)(int);
 #ifdef HISTORY_LIST
 #define HISTORY_LIST
 typedef struct Node Node;
@@ -137,7 +138,7 @@ void execCmd(char ** tokens) {
                     return;
                 }
                 else if (tokens[i+1]) {  // filename
-                    file = open(tokens[i+1], O_WRONLY | O_TRUNC | O_CREAT, S_IRWXU);
+                    file = open(tokens[i+1], O_WRONLY | O_CREAT, S_IRWXU);
                     if(file == -1) {
                         printf("\nShell: Could not create/edit file :(");
                         return;
@@ -180,8 +181,6 @@ void execCmd(char ** tokens) {
         return;
     }
 }
-
-
 // function to execute command in background and print child process id
 void execCmd_and(char ** tokens) {
 
@@ -206,47 +205,14 @@ void execCmd_and(char ** tokens) {
     }
 }
 
-void execute_cmd(char line[]){
+int main(int argc, char * argv[]) {
+    char line[MAX_INPUT_SIZE], history[MAX_INPUT_SIZE]="";
     char ** tokens_and;
     char ** tokens;
     int i;
-    if (line[strlen(line) - 2] == '&') { // if a command ends with & pass to execCmd_and to exceute in background
-        line[strlen(line) - 2] = '\n';
-        line[strlen(line) - 1] = '\0';
-        execCmd_and(tokenize(line));
-        return; // return shell
-    }
-    tokens_and = tokenize_and(line); // tokenizing sentence based on &
-    for (i = 0; tokens_and[i] != NULL; i++) { // executing each token
-        if (strlen(tokens_and[i]) == 1) // if no command is entered return shell
-            return;
-        else {
-            tokens = tokenize(tokens_and[i]); // tokenizing based on space
-            if (tokens[0][0] == 'c' && tokens[0][1] == 'd' & tokens[0][2] == '\0') { // if cd command
-                if (chdir(tokens[1]) != 0)
-                    // so chdir will return -1
-                    perror("cd failed");
-            }
-            else // built-in commands
-                execCmd(tokens);
-        }
-    }
-    // freeing memory allocated
-    for (int j = 0; tokens[j] != NULL; j++) {
-        free(tokens[j]);
-    }
-    free(tokens);
-
-    for (i = 0; tokens_and[i] != NULL; i++) {
-        free(tokens_and[i]);
-    }
-    free(tokens_and);
-}
-
-int main(int argc, char * argv[]) {
-    char line[MAX_INPUT_SIZE], history[MAX_INPUT_SIZE]="";
     FILE * fp;
 
+    sighandler_t ctrlC = signal(SIGINT, SIG_IGN);
 #ifdef HISTORY_LIST
     Node * commandList, * last, *front; // will store history
     commandList = (Node * ) malloc(sizeof(Node)); // history list
@@ -264,14 +230,10 @@ int main(int argc, char * argv[]) {
 
     if (argc == 2) {
         fp = fopen(argv[1], "r");
-        if (fp == NULL) {
-            puts("File doesn't exists.");
+        if (fp < 0) {
+            printf("File doesn't exists.");
             return -1;
         }
-        while(fgets(line, MAX_INPUT_SIZE, fp)){
-            execute_cmd(line);
-        }
-        return 0;
     }
 
     while (1) {
@@ -308,11 +270,56 @@ int main(int argc, char * argv[]) {
         last = last -> Next; // last inlast of the latest command
         if (!strcmp(line, "history\n")) writeHistory(commandList); // write commands to a file
 #endif // HISTORY_LIST
-
+	
+        if (line[strlen(line) - 2] == '&') { // if a command ends with & pass to execCmd_and to exceute in background
+            line[strlen(line) - 2] = '\n';
+            line[strlen(line) - 1] = '\0';
+            execCmd_and(tokenize(line));
+            continue; // return shell
+        }
         if (strlen(line) == 1) // if no command is entered return shell
             continue;
-        execute_cmd(line);
+        tokens_and = tokenize_and(line); // tokenizing sentence based on &
+
+        for (i = 0; tokens_and[i] != NULL; i++) { // executing each token
+            if (strlen(tokens_and[i]) == 1) // if no command is entered return shell
+                continue;
+            
+            else {
+                tokens = tokenize(tokens_and[i]); // tokenizing based on space
+                if (tokens[0][0] == 'c' && tokens[0][1] == 'd' & tokens[0][2] == '\0') { // if cd command
+                    if (chdir(tokens[1]) != 0)
+                        // so chdir will return -1
+                        perror("cd failed");
+                }
+                else if (!strcmp(tokens[0],"exit")){ // if exit command is entered
+                	// freeing alloted memory
+                	for (int j = 0; tokens[j] != NULL; j++) {
+            			free(tokens[j]);
+        		}
+        		free(tokens);
+
+        		for (i = 0; tokens_and[i] != NULL; i++) {
+            			free(tokens_and[i]);
+        		}
+        		free(tokens_and);
+        		kill(0, SIGTERM);
+                	exit(0);
+                }
+                else // built-in commands
+                    execCmd(tokens);
+            }
+        }
+        // freeing memory allocated
+        for (int j = 0; tokens[j] != NULL; j++) {
+            free(tokens[j]);
+        }
+        free(tokens);
+
+        for (i = 0; tokens_and[i] != NULL; i++) {
+            free(tokens_and[i]);
+        }
+        free(tokens_and);
     }
     return 0;
 }
-
