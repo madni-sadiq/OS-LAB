@@ -12,3 +12,5 @@ This shell has two modes:
    * Almost all the basic linux commands are available in the shell.
    * History feature is also available which stores one previous command and can be used by type **!!** command inside the shell.
    * Input/Output redirection is also available but limited to one operation, either Reading or Writing a file, at a time.
+
+To exit from the shell enter `exit` command.  
