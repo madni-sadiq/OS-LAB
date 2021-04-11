@@ -13,3 +13,8 @@ struct node {
 void insert(struct node **head, Task *task);
 void delete(struct node **head, Task *task);
 void traverse(struct node *head);
+
+
+void add(char *name, int priority, int burst, struct node **L);
+void schedule(struct node *head);
+void findWaitingTime(struct node *L, int n, int wt[]);

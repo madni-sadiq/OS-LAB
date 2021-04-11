@@ -26,9 +26,13 @@ int main(int argc, char *argv[])
     int priority;
     int burst;
 	int n = 0;
-	
+
+	(*L) = (struct node*)malloc(sizeof(struct node));
+
+    (*L) -> next = NULL;
+    puts("Hello");
     in = fopen(argv[1],"r");
-    
+
     while (fgets(task,SIZE,in) != NULL) {
         temp = strdup(task);
         name = strsep(&temp,",");
@@ -40,12 +44,13 @@ int main(int argc, char *argv[])
 		n++;
         free(temp);
     }
-	
+
     fclose(in);
-    //traverse(*L);	
+    //traverse(*L);
     // invoke the scheduler
+    puts("Hello");
     schedule(*L);
-    findavgTime( *L, n);
+    findavgTime(*L, n);
 
     return 0;
 }

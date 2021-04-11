@@ -1,7 +1,7 @@
 /**
  * Various list operations
  */
- 
+
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -12,7 +12,7 @@
 
 // add a new task to the list of tasks
 void insert(struct node **head, Task *newTask) {
-    // add the new task to the list 
+    // add the new task to the list
     /*struct node *newNode = malloc(sizeof(struct node));
     newNode->task = newTask;
     newNode->next = *head;
@@ -20,16 +20,12 @@ void insert(struct node **head, Task *newTask) {
     struct node *newNode = malloc(sizeof(struct node));
     newNode->task = newTask;
     newNode->next = NULL;
-
-    
-
     //if head is NULL, it is an empty list
-    if(*head == NULL)
-         *head = newNode;
-     else
-    {
+    // if(*head == NULL)
+    //      *head = newNode;
+    //  else
+    // {
         struct node *lastNode = *head;
-        
 
         //last node's next address will be NULL.
         while(lastNode->next != NULL)
@@ -39,9 +35,7 @@ void insert(struct node **head, Task *newTask) {
 
         //add the newNode at the end of the linked list
         lastNode->next = newNode;
-      
-
-    }
+    // }
 }
 
 // delete the selected task from the list
