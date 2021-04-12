@@ -9,8 +9,8 @@ int tid = 0;
 
 void add(char *name, int priority, int burst, struct node **L){
 	Task* t;
-	struct node *newNode = malloc(sizeof(struct node));
-	struct node *Position;
+	struct node *newNode = malloc(sizeof(struct node));	// Node to be added
+	struct node *Position;		// a node pointer will act as an iterator
 
 	t = malloc(sizeof(struct task));
 	t->tid = tid+1;
@@ -18,18 +18,16 @@ void add(char *name, int priority, int burst, struct node **L){
 	t->priority = priority;
 	t->burst = burst;
 
-	newNode -> task = t;
-	newNode -> next = NULL;
-
 	for (Position = *L; Position -> next != NULL; Position = Position -> next){
-	    if(Position -> next -> task -> burst > burst){
-	        newNode -> next = Position -> next;
-	       // Position -> next = newNode;
-	       break;
-	    }
+	    if(Position -> next -> task -> burst > burst)
+	       break;	// loop will break with Position = one node before greater burst time
     }
+	/* Insertion of new node */
+	newNode -> task = t;
+	newNode -> next = Position -> next;
     Position -> next = newNode;
 }
+
 
 
 // invoke the scheduler
@@ -83,7 +81,7 @@ void findavgTime(struct node *L, int n)
     {
         total_wt = total_wt + wt[i];
         total_tat = total_tat + tat[i];
-        printf("\t\bT%d",(i+1));
+        printf("\t\b%s",L->next->task->name);
         printf("\t\t%d", L->next->task->burst );
         printf("\t\t%d",wt[i] );
         printf("\t\t%d\n",tat[i] );

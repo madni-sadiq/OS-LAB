@@ -68,7 +68,7 @@ void findavgTime(struct node *L, int n)
     {
         total_wt = total_wt + wt[i];
         total_tat = total_tat + tat[i];
-        printf("\t\bT%d",(i+1));
+        printf("\t\b%s",L->next->task->name);
         printf("\t\t%d", L->next->task->burst );
         printf("\t\t%d",wt[i] );
         printf("\t\t%d\n",tat[i] );
