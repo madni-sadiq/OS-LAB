@@ -7,7 +7,7 @@
 #include<stdlib.h>
 #include<stdio.h>
 int tid = 0;
-// add a task to the list 
+// add a task to the list
 void add(char *name, int priority, int burst, struct node **L){
 	Task* t;
 	t = malloc(sizeof(struct task));
@@ -23,6 +23,7 @@ void schedule(struct node *head){
 	// creating a copy of head list
 	struct node **copyL = malloc(sizeof(struct node));
 	*copyL = (struct node*)malloc(sizeof(struct node));
+	struct node* tmpNode;
 	struct node *temp;
 	(*copyL)->next = NULL;
 	head = head->next;
@@ -48,7 +49,10 @@ void schedule(struct node *head){
 			run((*copyL)->task, time_quantum);
 			(*copyL)->task->burst -= time_quantum;
 			insert(copyL, (*copyL)->task);
-			*copyL = (*copyL)->next;		
+			tmpNode = *copyL;
+			*copyL = (*copyL)->next;
+// 			free(tmpNode->task);
+			free(tmpNode);
 		}
 	}
 }
@@ -57,17 +61,19 @@ void schedule(struct node *head){
 
 // Function to find the waiting time for all
 // processes
-int findWaitingTime( struct node *L, int n, int wt[]) {
+int findWaitingTime( struct node *L, int n, int wt[], int tat[]) {
    // Make a copy of burst times bt[] to store remaining
    // burst times.
    struct node *Position;
    Position = L;
    Position = Position->next;
    int rem_bt[n];
+   int bt[n];
    int i = 0;
-  
+
    while (Position != NULL){
-   	rem_bt[i++] = Position->task->burst;
+   	rem_bt[i] = Position->task->burst;
+   	bt[i++] = Position->task->burst;
    	Position = Position->next;
    	}
 
@@ -75,8 +81,6 @@ int findWaitingTime( struct node *L, int n, int wt[]) {
    // Keep traversing processes in round robin manner
    // until all of them are not done.
    while (1) {
-   	Position = L;
-   	Position = Position->next;
       int done = 1;
       // Traverse all processes one by one repeatedly
       for (int i = 0 ; i < n; i++) {
@@ -100,10 +104,8 @@ int findWaitingTime( struct node *L, int n, int wt[]) {
                t = t + rem_bt[i];
                // Waiting time is current time minus time
                // used by this process
-               wt[i] = t - Position->task->burst;
-               if (Position->next != NULL){
-               	Position = Position->next;
-               }
+               tat[i] = t;
+               wt[i] = t - bt[i];
                // As the process gets fully executed
                // make its remaining burst time = 0
                rem_bt[i] = 0;
@@ -116,49 +118,31 @@ int findWaitingTime( struct node *L, int n, int wt[]) {
    }
    return 1;
 }
-  
-// Function to calculate turn around time 
-void findTurnAroundTime( struct node *L,  int n, int wt[], int tat[]) 
-{ 
-    // calculating turnaround time by adding 
-    // bt[i] + wt[i] 
-    for (int  i = 0; i < n ; i++) {
-    	L = L->next;
-        tat[i] = L->task->burst + wt[i];
-        
-        } 
-} 
-    
-//Function to calculate average time 
-void findavgTime( struct node *L, int n)  
-{ 
-    int wt[n], tat[n], total_wt = 0, total_tat = 0; 
-    
-    //Function to find waiting time of all processes 
-    findWaitingTime(L, n, wt); 
-    
-    //Function to find turn around time for all processes 
-    findTurnAroundTime(L, n, wt, tat); 
-    
-    //Display processes along with all details 
-    printf("Processes\tBurst time\tWaiting time\tTurn around time\n"); 
+
+//Function to calculate average time
+void findavgTime( struct node *L, int n)
+{
+    int wt[n], tat[n], total_wt = 0, total_tat = 0;
+
+    //Function to find waiting time of all processes
+    findWaitingTime(L, n, wt, tat);
+
+    //Display processes along with all details
+    printf("Processes\tBurst time\tWaiting time\tTurn around time\n");
     L = L->next;
-    // Calculate total waiting time and total turn  
-    // around time 
-    for (int  i=0; i<n; i++) 
-    { 
-        total_wt = total_wt + wt[i]; 
-        total_tat = total_tat + tat[i]; 
+    // Calculate total waiting time and total turn
+    // around time
+    for (int  i=0; i<n; i++)
+    {
+        total_wt = total_wt + wt[i];
+        total_tat = total_tat + tat[i];
         printf("\t\b%s",L->task->name);
         printf("\t\t%d", L->task->burst );
-        printf("\t\t%d",wt[i] );
-        printf("\t\t%d\n",tat[i] ); 
+        printf("\t\t%d",wt[i]);
+        printf("\t\t%d\n",tat[i]);
         if (L->next != NULL)
         L = L->next;
-    } 
-    int s=(float)total_wt / (float)n;
-    int t=(float)total_tat / (float)n;
-    printf("Average waiting time = %d",s);
-    printf("\n");
-    printf("Average turn around time = %d\n ",t); 
+    }
+    printf("Average waiting time = %.3f\n",total_wt / (float)n);
+    printf("Average turn around time = %.3f\n ",total_tat / (float)n);
 }

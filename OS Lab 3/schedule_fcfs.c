@@ -34,7 +34,7 @@ void findWaitingTime(struct node *L, int n, int wt[])
     for (int  i = 1; i < n ; i++ ) {
         wt[i] =  L->next->task->burst + wt[i-1] ;
         L = L->next;
-        }
+    }
 }
 
 // Function to calculate turn around time
@@ -75,9 +75,6 @@ void findavgTime(struct node *L, int n)
         if (L->next != NULL)
         L = L->next;
     }
-    int s=(float)total_wt / (float)n;
-    int t=(float)total_tat / (float)n;
-    printf("Average waiting time = %d",s);
-    printf("\n");
-    printf("Average turn around time = %d\n ",t);
+    printf("Average waiting time = %.3f\n",total_wt / (float)n);
+    printf("Average turn around time = %.3f\n ",total_tat / (float)n);
 }
