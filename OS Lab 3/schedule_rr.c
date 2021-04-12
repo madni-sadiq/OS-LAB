@@ -30,7 +30,7 @@ void schedule(struct node *head){
 	temp = head;
 	// adding tasks in copy list
 	while (head != NULL){
-		Task *t = malloc(sizeof(struct node));
+		Task *t = malloc(sizeof(Task));
 		t->tid = head->task->tid;
 		t->name = head->task->name;
 		t->priority = head->task->priority;
@@ -43,7 +43,9 @@ void schedule(struct node *head){
 	while ((*copyL) != NULL){ // applying round robin on copied list
 		if ((*copyL)->task->burst <= time_quantum){ // if burst is less than slice, simply run it
 			run((*copyL)->task, (*copyL)->task->burst);
+			tmpNode = *copyL;
 			*copyL = (*copyL)->next;
+			free(tmpNode->task);
 		}
 		else{// if burst is greater than slice, run for time slice, and insert again with decremented burst
 			run((*copyL)->task, time_quantum);
@@ -51,13 +53,10 @@ void schedule(struct node *head){
 			insert(copyL, (*copyL)->task);
 			tmpNode = *copyL;
 			*copyL = (*copyL)->next;
-// 			free(tmpNode->task);
 			free(tmpNode);
 		}
 	}
 }
-
-
 
 // Function to find the waiting time for all
 // processes

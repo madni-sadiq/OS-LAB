@@ -35,6 +35,12 @@ schedule_fcfs.o: schedule_fcfs.c
 priority_rr: driver.o list.o CPU.o schedule_priority_rr.o
 	$(CC) $(CFLAGS) -o priority_rr driver.o schedule_priority_rr.o list.o CPU.o
 
+mqs: driver.o list.o CPU.o schedule_mqs.o
+	$(CC) $(CFLAGS) -o mqs driver.o schedule_mqs.o list.o CPU.o
+
+schedule_mqs.o: schedule_mqs.c
+	$(CC) $(CFLAGS) -c schedule_mqs.c
+
 driver.o: driver.c
 	$(CC) $(CFLAGS) -c driver.c
 
