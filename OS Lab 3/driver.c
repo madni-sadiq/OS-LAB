@@ -28,7 +28,6 @@ int main(int argc, char *argv[])
 	(*L) = (struct node*)malloc(sizeof(struct node));
 
     (*L) -> next = NULL;
-    puts("Hello");
     in = fopen(argv[1],"r");
 
     while (fgets(task,SIZE,in) != NULL) {
@@ -46,7 +45,6 @@ int main(int argc, char *argv[])
     fclose(in);
     //traverse(*L);
     // invoke the scheduler
-    puts("Hello");
     schedule(*L);
     findavgTime(*L, n);
 
