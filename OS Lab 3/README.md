@@ -15,9 +15,9 @@ E.g.,
 3. Algorithm of _priority scheduling_ is implemented in _schedule_priority.c_
 4. Algorithm of _rr_ is implemented in _schedule_rr.c_
 ## Compilation & Execution
-There is added a Makefile in repository which will build the necessary files to run an algorithm. Command to build the desired algorithm is *`make <algorithm name>`*. 
-E.g., in order to build the algorithm of fcfs, type: `make fcfs`
-Similarly, to build the algorithm of sjf, type: `make sjf`, and so on.
-After building codes, they can be executed by typing name of the algorithm followed by the filename containing tasks with their priority number and burst time.
-E.g., if fcfs algorithm has been built, it can be executed by using the command: `./fcfs schedule.txt` 
+There is added a Makefile in repository which will build the necessary files to run an algorithm. Command to build the desired algorithm is *`make <algorithm name>`*. \
+E.g., in order to build the algorithm of fcfs, type: `make fcfs`\
+Similarly, to build the algorithm of sjf, type: `make sjf`, and so on.\
+After building codes, they can be executed by typing name of the algorithm followed by the filename containing tasks with their priority number and burst time.\
+E.g., if fcfs algorithm has been built, it can be executed by using the command: `./fcfs schedule.txt` \
 where, schedule.txt is name of the file containing tasks and their priority number and burst time.
