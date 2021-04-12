@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "schedulers.h"
+#include "list.h"
 
 #define SIZE    100
 
@@ -50,3 +50,5 @@ int main(int argc, char *argv[])
 
     return 0;
 }
+
+// gcc driver.c task.h schedulers.h schedule_fcfs.c list.c list.h CPU.c cpu.h -o test
