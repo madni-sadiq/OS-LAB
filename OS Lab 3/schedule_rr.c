@@ -20,45 +20,103 @@ void add(char *name, int priority, int burst, struct node **L){
 
 // invoke the scheduler
 void schedule(struct node *head){
-	struct node **L = malloc(sizeof(struct node));
-	*L = (struct node*)malloc(sizeof(struct node));
-	head = head->next;
+	// creating a copy of head list
+	struct node **copyL = malloc(sizeof(struct node));
+	*copyL = (struct node*)malloc(sizeof(struct node));
 	struct node *temp;
+	(*copyL)->next = NULL;
+	head = head->next;
 	temp = head;
-	printf("%p\n%p\n%p\n",head,temp,L);
-
+	// adding tasks in copy list
 	while (head != NULL){
-		insert(L, head->task);
+		Task *t = malloc(sizeof(struct node));
+		t->tid = head->task->tid;
+		t->name = head->task->name;
+		t->priority = head->task->priority;
+		t->burst = head->task->burst;
+		insert(copyL, t);
 		head = head->next;
 	}
+	*copyL = (*copyL)->next;
 	head = temp;
-	while (head != NULL){
-		if (head->task->burst <= time_quantum){
-			run(head->task, head->task->burst);
-			head = head->next;
+	while ((*copyL) != NULL){ // applying round robin on copied list
+		if ((*copyL)->task->burst <= time_quantum){ // if burst is less than slice, simply run it
+			run((*copyL)->task, (*copyL)->task->burst);
+			*copyL = (*copyL)->next;
 		}
-		else{
-			run(head->task, time_quantum);
-			head->task->burst -= time_quantum;
-			insert(&head, head->task);
-			head = head->next;		
+		else{// if burst is greater than slice, run for time slice, and insert again with decremented burst
+			run((*copyL)->task, time_quantum);
+			(*copyL)->task->burst -= time_quantum;
+			insert(copyL, (*copyL)->task);
+			*copyL = (*copyL)->next;		
 		}
 	}
 }
 
-void findWaitingTime(struct node *L, int n, int wt[]) 
-{ 
-    // waiting time for first process is 0 
-    wt[0] = 0; 
-    
-    // calculating waiting time 
-    for (int  i = 1; i < n ; i++ ) {
-    	L = L->next;
-        wt[i] =  L->task->burst + wt[i-1] ; 
-        
-        }
-} 
-    
+
+
+// Function to find the waiting time for all
+// processes
+int findWaitingTime( struct node *L, int n, int wt[]) {
+   // Make a copy of burst times bt[] to store remaining
+   // burst times.
+   struct node *Position;
+   Position = L;
+   Position = Position->next;
+   int rem_bt[n];
+   int i = 0;
+  
+   while (Position != NULL){
+   	rem_bt[i++] = Position->task->burst;
+   	Position = Position->next;
+   	}
+
+   int t = 0; // Current time
+   // Keep traversing processes in round robin manner
+   // until all of them are not done.
+   while (1) {
+   	Position = L;
+   	Position = Position->next;
+      int done = 1;
+      // Traverse all processes one by one repeatedly
+      for (int i = 0 ; i < n; i++) {
+         // If burst time of a process is greater than 0
+         // then only need to process further
+         if (rem_bt[i] > 0) {
+            done = 0; // There is a pending process
+            if (rem_bt[i] > time_quantum) {
+               // Increase the value of t i.e. shows
+               // how much time a process has been processed
+               t += time_quantum;
+               // Decrease the burst_time of current process
+               // by quantum
+               rem_bt[i] -= time_quantum;
+            }
+            // If burst time is smaller than or equal to
+            // quantum. Last cycle for this process
+            else {
+               // Increase the value of t i.e. shows
+               // how much time a process has been processed
+               t = t + rem_bt[i];
+               // Waiting time is current time minus time
+               // used by this process
+               wt[i] = t - Position->task->burst;
+               if (Position->next != NULL){
+               	Position = Position->next;
+               }
+               // As the process gets fully executed
+               // make its remaining burst time = 0
+               rem_bt[i] = 0;
+            }
+         }
+      }
+      // If all processes are done
+      if (done == 1)
+         break;
+   }
+   return 1;
+}
+  
 // Function to calculate turn around time 
 void findTurnAroundTime( struct node *L,  int n, int wt[], int tat[]) 
 { 
@@ -91,7 +149,7 @@ void findavgTime( struct node *L, int n)
     { 
         total_wt = total_wt + wt[i]; 
         total_tat = total_tat + tat[i]; 
-        printf("\t\bT%d",(i+1));
+        printf("\t\b%s",L->task->name);
         printf("\t\t%d", L->task->burst );
         printf("\t\t%d",wt[i] );
         printf("\t\t%d\n",tat[i] ); 
