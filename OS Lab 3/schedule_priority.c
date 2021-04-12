@@ -19,7 +19,7 @@ void add(char *name, int priority, int burst, struct node **L){
 	t->burst = burst;
 
 	for (Position = *L; Position -> next != NULL; Position = Position -> next){
-	    if(Position -> next -> task -> priority > priority)
+	    if(Position -> next -> task -> priority < priority)
 	       break;	// loop will break with Position = one node before higher priority
     }
 	/* Insertion of new node */
