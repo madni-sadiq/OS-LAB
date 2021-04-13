@@ -32,9 +32,9 @@ void schedule(struct node *head){
         theLists[i] = malloc(sizeof(struct node));
         theLists[i] -> next = NULL;
     }
-    
+
 	head = head->next;
-	
+
 	while (head != NULL){
 		Task *t = malloc(sizeof(Task));
 		t->tid = head->task->tid;
@@ -43,7 +43,7 @@ void schedule(struct node *head){
 		t->burst = head->task->burst;
 		insert(&theLists[0], t);
 		head = head->next;
-		
+
 	}
 	theLists[0] = theLists[0]->next;
 	while (theLists[0] != NULL){
@@ -59,7 +59,7 @@ void schedule(struct node *head){
 			t->name = theLists[0]->task->name;
 			t->priority = theLists[0]->task->priority;
 			t->burst = theLists[0]->task->burst - time_quantum1;
-			insert(&theLists[1], t);	
+			insert(&theLists[1], t);
 		}
 		theLists[0] = theLists[0]->next;
 	}
@@ -77,7 +77,7 @@ void schedule(struct node *head){
 			t->name = theLists[1]->task->name;
 			t->priority = theLists[1]->task->priority;
 			t->burst = theLists[1]->task->burst - time_quantum2;
-			insert(&theLists[2], t);	
+			insert(&theLists[2], t);
 		}
 		theLists[1] = theLists[1]->next;
 	}
@@ -95,9 +95,12 @@ void schedule(struct node *head){
 			t->name = theLists[2]->task->name;
 			t->priority = theLists[2]->task->priority;
 			t->burst = theLists[2]->task->burst - time_quantum3;
-			insert(&theLists[2], t);	
+			insert(&theLists[2], t);
 		}
 		theLists[2] = theLists[2]->next;
 	}
 }
-	
+
+void findavgTime(struct node *L, int n){
+    return ;
+}
