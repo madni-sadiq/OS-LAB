@@ -9,6 +9,7 @@
 #include<stdlib.h>
 #include<stdio.h>
 int tid = 0;
+struct node** theLists;
 // add a task to the list
 void add(char *name, int priority, int burst, struct node **L){
 	Task* t;
@@ -22,7 +23,6 @@ void add(char *name, int priority, int burst, struct node **L){
 
 // invoke the scheduler
 void schedule(struct node *head){
-	struct node** theLists;
     	int  i;
 
     /*  array of Lists of size=3
@@ -101,6 +101,68 @@ void schedule(struct node *head){
 	}
 }
 
+void get_timing(int wt[], int bt[], int rem_bt[], int tat[], int quantum, int n){
+    int i;
+    static int t = 0;
+    for(i = 0; i < n; i++){
+        if(rem_bt[i] > quantum){
+            t += quantum;
+            rem_bt[i] -= quantum;
+        }
+        else if(rem_bt[i] == 0){
+            continue;
+        }
+        else{
+            t += rem_bt[i];
+            rem_bt[i] = 0;
+            tat[i] = t;
+            wt[i] = t - bt[i];
+        }
+    }
+}
+
 void findavgTime(struct node *L, int n){
+    int wt[n], tat[n], total_wt = 0, total_tat = 0;
+    int rem_bt[n], bt[n], sum;
+    // int wt0[n], wt1[n], wt2[n];
+    int i;
+    struct node* Position = L;
+    for(i = 0; i < n; i++){
+        rem_bt[i] = Position->next->task->burst;
+        bt[i] = rem_bt[i];
+        Position = Position -> next;
+    }
+    get_timing(wt, bt, rem_bt, tat, time_quantum1, n);
+    get_timing(wt, bt, rem_bt, tat, time_quantum2, n);
+    while(1){
+        sum = 0;
+        for(i = 0; i < n; i++) {
+            sum += rem_bt[i];
+        }
+        if(sum)
+            get_timing(wt, bt, rem_bt, tat, time_quantum3, n);
+        else break;
+    }
+
+    printf("Processes\tBurst time\tWaiting time\tTurn around time\n");
+    Position = L->next;
+    // Calculate total waiting time and total turn
+    // around time
+    for (int  i=0; i<n; i++)
+    {
+        // wt[i] = wt0[i] + wt1[i] + wt2[i];
+        total_wt = total_wt + wt[i];
+        total_tat = total_tat + tat[i];
+        printf("\t\b%s",Position->task->name);
+        printf("\t\t%d", Position->task->burst );
+        printf("\t\t%d",wt[i]);
+        printf("\t\t%d\n",tat[i]);
+        if (Position->next != NULL)
+        Position = Position->next;
+    }
+    printf("Average waiting time = %.3f\n",total_wt / (float)n);
+    printf("Average turn around time = %.3f\n ",total_tat / (float)n);
+
+
     return ;
 }
