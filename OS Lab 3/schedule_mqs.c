@@ -172,5 +172,8 @@ void findavgTime(struct node *L, int n) {
             printf("\t\t%d\n",tat[index++]);
         }
     }
+    printf("Average waiting time = %.3f\n",total_wt / (float)n);
+    printf("Average turn around time = %.3f\n ",total_tat / (float)n);
+
 }
 
