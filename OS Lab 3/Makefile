@@ -41,6 +41,12 @@ mqs: driver.o list.o CPU.o schedule_mqs.o
 schedule_mqs.o: schedule_mqs.c
 	$(CC) $(CFLAGS) -c schedule_mqs.c
 
+mfq: driver.o list.o CPU.o schedule_mfq.o
+	$(CC) $(CFLAGS) -o mfq driver.o schedule_mfq.o list.o CPU.o
+
+schedule_mfq.o: schedule_mfq.c
+	$(CC) $(CFLAGS) -c schedule_mfq.c
+
 driver.o: driver.c
 	$(CC) $(CFLAGS) -c driver.c
 
