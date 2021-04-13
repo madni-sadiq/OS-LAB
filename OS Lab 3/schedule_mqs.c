@@ -154,8 +154,8 @@ void findavgTime(struct node *L, int n) {
         oneList = theLists[i];
         size = 0;
         for (Position=oneList; Position->next!=NULL;Position=Position->next)
-            size++;
-        if(size){
+            size++;     // count the number of elements of list
+        if(size){       // check if List is not empty
             findWaitingTime(oneList, size, wt, tat, offset);
             offset += size;
         }
