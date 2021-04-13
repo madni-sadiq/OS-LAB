@@ -8,6 +8,7 @@
 #define time_quantum 10
 
 int tid = 0;
+struct node** theLists;
 // add a task to the list
 void add(char *name, int priority, int burst, struct node **L){
 	Task* t;
@@ -22,6 +23,7 @@ void add(char *name, int priority, int burst, struct node **L){
 void insert2list(struct node* L, Task* t){
     struct node* tmpNode = malloc(sizeof(struct node));
     struct node *lastNode = L;
+    // L->task->burst++;
     tmpNode -> task = t;
     tmpNode -> next = NULL;
 
@@ -81,9 +83,8 @@ void schedule_rr(struct node *head){
 
 
 void schedule(struct node *head){
-    struct node** theLists;
     struct node* L;
-    int size, i;
+    int i;
 
     /*  array of Lists of size=11
         size is 1 greater because MAX_PRIORITY % MAX_PRIORITY = 0
@@ -96,10 +97,80 @@ void schedule(struct node *head){
     }
     split(theLists, head);
 
-    for(size = (MAX_PRIORITY); size > 0; size--){
-        L = theLists[size];
+    for(i = (MAX_PRIORITY); i > 0; i--){
+        L = theLists[i];
         if(L->next){
             schedule_rr(L);
         }
     }
 }
+
+int findWaitingTime(struct node *L, int n, int wt[], int tat[], int offset) {
+   struct node *Position = L->next;
+   int rem_bt[n];
+   int bt[n];
+   int i = 0;
+   static int t = 0;
+
+   while (Position != NULL){
+       	rem_bt[i] = Position->task->burst;
+       	bt[i++] = Position->task->burst;
+       	Position = Position->next;
+   	}
+
+//   int t = 0; // Current time
+   while (1) {
+      int done = 1;
+      for (int i = 0 ; i < n; i++) {
+         if (rem_bt[i] > 0) {
+            done = 0; // There is a pending process
+            if (rem_bt[i] > time_quantum) {
+               t += time_quantum;
+               rem_bt[i] -= time_quantum;
+            }
+            else {
+               t = t + rem_bt[i];
+               tat[i+offset] = t;
+               wt[i+offset] = t - bt[i];
+               rem_bt[i] = 0;
+            }
+         }
+      }
+      // If all processes are done
+      if (done == 1)
+         break;
+   }
+   return 1;
+}
+
+void findavgTime(struct node *L, int n) {
+    struct node* oneList;
+    int i, index = 0;
+    int offset = 0, size;
+    struct node* Position;
+    int wt[n], tat[n], total_wt = 0, total_tat = 0;
+
+    for(i = (MAX_PRIORITY); i > 0; i--) {
+        oneList = theLists[i];
+        size = 0;
+        for (Position=oneList; Position->next!=NULL;Position=Position->next)
+            size++;
+        if(size){
+            findWaitingTime(oneList, size, wt, tat, offset);
+            offset += size;
+        }
+    }
+    printf("Processes\tPriority\tBurst time\tWaiting time\tTurn around time\n");
+    for(i = (MAX_PRIORITY); i > 0; i--) {
+        for(oneList=theLists[i]->next;oneList!=NULL;oneList=oneList->next){
+            total_wt = total_wt + wt[index];
+            total_tat = total_tat + tat[index];
+            printf("%s",oneList->task->name);
+            printf("\t\t%d",oneList->task->priority);
+            printf("\t\t%d", oneList->task->burst );
+            printf("\t\t%d",wt[index]);
+            printf("\t\t%d\n",tat[index++]);
+        }
+    }
+}
+

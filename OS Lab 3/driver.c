@@ -46,7 +46,7 @@ int main(int argc, char *argv[])
     //traverse(*L);
     // invoke the scheduler
     schedule(*L);
-    // findavgTime(*L, n);
+    findavgTime(*L, n);
 
     return 0;
 }

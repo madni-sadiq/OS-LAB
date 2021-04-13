@@ -119,13 +119,13 @@ int findWaitingTime( struct node *L, int n, int wt[], int tat[]) {
 }
 
 //Function to calculate average time
-void findavgTime( struct node *L, int n)
+void findavgTime(struct node *L, int n)
 {
     int wt[n], tat[n], total_wt = 0, total_tat = 0;
 
     //Function to find waiting time of all processes
     findWaitingTime(L, n, wt, tat);
-
+    puts("hello");
     //Display processes along with all details
     printf("Processes\tBurst time\tWaiting time\tTurn around time\n");
     L = L->next;
