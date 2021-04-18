@@ -9,6 +9,7 @@
 #include<stdlib.h>
 #include<stdio.h>
 int tid = 0;
+struct node** theLists;
 // add a task to the list
 void add(char *name, int priority, int burst, struct node **L){
 	Task* t;
@@ -22,28 +23,18 @@ void add(char *name, int priority, int burst, struct node **L){
 
 // invoke the scheduler
 void schedule(struct node *head){
-	struct node** theLists;
     	int  i;
 
-    /*  array of Lists of size=11
-        size is 1 greater because MAX_PRIORITY % MAX_PRIORITY = 0
-        one greater size to store MAX_PRIORITY at max index
+    /*  array of Lists of size=3
     */
     theLists = malloc(sizeof(struct node*) * 3);
     for(i = 0; i < 3; i++){
         theLists[i] = malloc(sizeof(struct node));
         theLists[i] -> next = NULL;
     }
-    	
-	// creating a copy of head list
-	//struct node **copyL = malloc(sizeof(struct node));
-//	*copyL = (struct node*)malloc(sizeof(struct node));
-	//struct node* tmpNode;
-	//struct node *temp;
-	//(*copyL)->next = NULL;
+
 	head = head->next;
-	//temp = head;
-	
+
 	while (head != NULL){
 		Task *t = malloc(sizeof(Task));
 		t->tid = head->task->tid;
@@ -52,7 +43,7 @@ void schedule(struct node *head){
 		t->burst = head->task->burst;
 		insert(&theLists[0], t);
 		head = head->next;
-		
+
 	}
 	theLists[0] = theLists[0]->next;
 	while (theLists[0] != NULL){
@@ -68,7 +59,7 @@ void schedule(struct node *head){
 			t->name = theLists[0]->task->name;
 			t->priority = theLists[0]->task->priority;
 			t->burst = theLists[0]->task->burst - time_quantum1;
-			insert(&theLists[1], t);	
+			insert(&theLists[1], t);
 		}
 		theLists[0] = theLists[0]->next;
 	}
@@ -86,7 +77,7 @@ void schedule(struct node *head){
 			t->name = theLists[1]->task->name;
 			t->priority = theLists[1]->task->priority;
 			t->burst = theLists[1]->task->burst - time_quantum2;
-			insert(&theLists[2], t);	
+			insert(&theLists[2], t);
 		}
 		theLists[1] = theLists[1]->next;
 	}
@@ -104,125 +95,74 @@ void schedule(struct node *head){
 			t->name = theLists[2]->task->name;
 			t->priority = theLists[2]->task->priority;
 			t->burst = theLists[2]->task->burst - time_quantum3;
-			insert(&theLists[2], t);	
+			insert(&theLists[2], t);
 		}
 		theLists[2] = theLists[2]->next;
 	}
-	}
-	/*// adding tasks in copy list
-	while (head != NULL){
-		Task *t = malloc(sizeof(Task));
-		t->tid = head->task->tid;
-		t->name = head->task->name;
-		t->priority = head->task->priority;
-		t->burst = head->task->burst;
-		insert(copyL, t);
-		head = head->next;
-	}
-	*copyL = (*copyL)->next;
-	head = temp;
-	while ((*copyL) != NULL){ // applying round robin on copied list
-		if ((*copyL)->task->burst <= time_quantum1){ // if burst is less than slice, simply run it
-			run((*copyL)->task, (*copyL)->task->burst);
-			tmpNode = *copyL;
-			*copyL = (*copyL)->next;
-			free(tmpNode->task);
-		}
-		else{// if burst is greater than slice, run for time slice, and insert again with decremented burst
-			run((*copyL)->task, time_quantum);
-			(*copyL)->task->burst -= time_quantum;
-			insert(copyL, (*copyL)->task);
-			tmpNode = *copyL;
-			*copyL = (*copyL)->next;
-			free(tmpNode);
-		}
-	}
 }
 
-// Function to find the waiting time for all
-// processes
-int findWaitingTime( struct node *L, int n, int wt[], int tat[]) {
-   // Make a copy of burst times bt[] to store remaining
-   // burst times.
-   struct node *Position;
-   Position = L;
-   Position = Position->next;
-   int rem_bt[n];
-   int bt[n];
-   int i = 0;
-
-   while (Position != NULL){
-   	rem_bt[i] = Position->task->burst;
-   	bt[i++] = Position->task->burst;
-   	Position = Position->next;
-   	}
-
-   int t = 0; // Current time
-   // Keep traversing processes in round robin manner
-   // until all of them are not done.
-   while (1) {
-      int done = 1;
-      // Traverse all processes one by one repeatedly
-      for (int i = 0 ; i < n; i++) {
-         // If burst time of a process is greater than 0
-         // then only need to process further
-         if (rem_bt[i] > 0) {
-            done = 0; // There is a pending process
-            if (rem_bt[i] > time_quantum) {
-               // Increase the value of t i.e. shows
-               // how much time a process has been processed
-               t += time_quantum;
-               // Decrease the burst_time of current process
-               // by quantum
-               rem_bt[i] -= time_quantum;
-            }
-            // If burst time is smaller than or equal to
-            // quantum. Last cycle for this process
-            else {
-               // Increase the value of t i.e. shows
-               // how much time a process has been processed
-               t = t + rem_bt[i];
-               // Waiting time is current time minus time
-               // used by this process
-               tat[i] = t;
-               wt[i] = t - bt[i];
-               // As the process gets fully executed
-               // make its remaining burst time = 0
-               rem_bt[i] = 0;
-            }
-         }
-      }
-      // If all processes are done
-      if (done == 1)
-         break;
-   }
-   return 1;
+void get_timing(int wt[], int bt[], int rem_bt[], int tat[], int quantum, int n){
+    int i;
+    static int t = 0;
+    for(i = 0; i < n; i++){
+        if(rem_bt[i] > quantum){
+            t += quantum;
+            rem_bt[i] -= quantum;
+        }
+        else if(rem_bt[i] == 0){
+            continue;
+        }
+        else{
+            t += rem_bt[i];
+            rem_bt[i] = 0;
+            tat[i] = t;
+            wt[i] = t - bt[i];
+        }
+    }
 }
 
-//Function to calculate average time
-void findavgTime( struct node *L, int n)
-{
+void findavgTime(struct node *L, int n){
     int wt[n], tat[n], total_wt = 0, total_tat = 0;
+    int rem_bt[n], bt[n], sum;
+    // int wt0[n], wt1[n], wt2[n];
+    int i;
+    struct node* Position = L;
+    for(i = 0; i < n; i++){
+        rem_bt[i] = Position->next->task->burst;
+        bt[i] = rem_bt[i];
+        Position = Position -> next;
+    }
+    get_timing(wt, bt, rem_bt, tat, time_quantum1, n);
+    get_timing(wt, bt, rem_bt, tat, time_quantum2, n);
+    while(1){
+        sum = 0;
+        for(i = 0; i < n; i++) {
+            sum += rem_bt[i];
+        }
+        if(sum)
+            get_timing(wt, bt, rem_bt, tat, time_quantum3, n);
+        else break;
+    }
 
-    //Function to find waiting time of all processes
-    findWaitingTime(L, n, wt, tat);
-
-    //Display processes along with all details
     printf("Processes\tBurst time\tWaiting time\tTurn around time\n");
-    L = L->next;
+    Position = L->next;
     // Calculate total waiting time and total turn
     // around time
     for (int  i=0; i<n; i++)
     {
+        // wt[i] = wt0[i] + wt1[i] + wt2[i];
         total_wt = total_wt + wt[i];
         total_tat = total_tat + tat[i];
-        printf("\t\b%s",L->task->name);
-        printf("\t\t%d", L->task->burst );
+        printf("\t\b%s",Position->task->name);
+        printf("\t\t%d", Position->task->burst );
         printf("\t\t%d",wt[i]);
         printf("\t\t%d\n",tat[i]);
-        if (L->next != NULL)
-        L = L->next;
+        if (Position->next != NULL)
+        Position = Position->next;
     }
     printf("Average waiting time = %.3f\n",total_wt / (float)n);
     printf("Average turn around time = %.3f\n ",total_tat / (float)n);
-}*/
+
+
+    return ;
+}

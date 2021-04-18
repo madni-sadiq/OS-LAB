@@ -5,6 +5,7 @@ This project involves implementing several different process scheduling algorith
 * Priority scheduling, which schedules tasks based on priority. 
 * Round-robin (RR) scheduling, where each task is run for a time quantum (or for the remainder of its CPU burst). 
 * Priority with round-robin, also called Multilevel Queue Scheduling (MQS), which schedules tasks in order of priority and uses round-robin scheduling for tasks with equal priority.
+* Multilevel feedback Queue (MFQ), which has three Queues of time Quantum 10 ms, 20 ms and 30 ms from first to last queue respectively. Only demotion of a task is implemented (not promotion).
 
 Priorities range from 1 to 10, where a higher numeric value indicates a higher relative priority. For round-robin scheduling, the length of a time quantum is 10 milliseconds.
 ## Implementation
@@ -15,6 +16,7 @@ E.g.,
 3. Algorithm of _priority scheduling_ is implemented in _schedule_priority.c_
 4. Algorithm of _rr_ is implemented in _schedule_rr.c_
 5. Algorithm of _mqs_ is implemented in _schedule_mqs.c_
+6. Algorithm of _mfq_ is implemented in _schedule_mfq.c_
 ## Compilation & Execution
 There is added a Makefile in repository which will build the necessary files to run an algorithm. Command to build the desired algorithm is *`make <algorithm name>`*. \
 E.g., in order to build the algorithm of fcfs, type: `make fcfs`\
