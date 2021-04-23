@@ -35,11 +35,9 @@ void *fibGen(void *Max_Points)
 {
 	int n = *(int*) Max_Points;
 	for (int i=0; i<2; i++){
-	//fibser[i]= *(int*)malloc(sizeof(int));
 	fibser[i]=i;
 	}
 	for (int i=2; i<n; i++){
-	//fibser[i] = *(int*)malloc(sizeof(int));
 	fibser[i] = fibser[i-1] + fibser[i-2];
 	}
 	
