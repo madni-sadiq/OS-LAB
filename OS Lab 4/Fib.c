@@ -8,7 +8,7 @@ void *fibGen(void *Max_Points);/* the thread */
 
 void main(int argc, char *argv[]){
 int Max_Points;
-printf("Enter the number fibonacci numbers you want: ");
+printf("Enter the number of fibonacci numbers you want: ");
 scanf("%d", &Max_Points);
 fibser= (int*)malloc(sizeof(int)*Max_Points);
 pthread_t tid; /* the thread identifier */
