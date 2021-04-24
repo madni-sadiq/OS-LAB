@@ -1,3 +1,13 @@
+/* 
+To Compile 
+gcc MonteCarlo.c -lpthread -lm
+
+To run
+./a.out
+
+*/
+
+
 #include<stdio.h>
 #include<time.h>
 #include <pthread.h>

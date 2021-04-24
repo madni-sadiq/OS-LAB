@@ -1,3 +1,13 @@
+/* 
+To Compile 
+gcc Fib.c -lpthread
+
+To run
+./a.out
+
+*/
+
+
 #include<stdio.h>
 #include <pthread.h>
 #include <stdlib.h>
@@ -11,17 +21,20 @@ int Max_Points;
 printf("Enter the number of fibonacci numbers you want: ");
 scanf("%d", &Max_Points);
 fibser= (int*)malloc(sizeof(int)*Max_Points);
-pthread_t tid; /* the thread identifier */
+pthread_t tid[Max_Points]; /* the thread identifier */
 pthread_attr_t attr; /* set of attributes for the thread */
 	
 /* get the default attributes */
 pthread_attr_init(&attr);
 
 /* create the thread */
-pthread_create(&tid,&attr,fibGen, &Max_Points);
-
+for (int i=0; i<Max_Points; i++){
+pthread_create(&tid[i],&attr,fibGen, &Max_Points);
+}
 /* now wait for the thread to exit */
-pthread_join(tid,NULL);	
+for (int i=0; i<Max_Points; i++){
+pthread_join(tid[i],NULL);	
+}
 for (int i=0; i<Max_Points; i++){
 printf ("%d,", fibser[i]);
 }

@@ -1,3 +1,13 @@
+/* 
+To Compile 
+gcc MultiThreadedMC.c -lpthread -lm
+
+To run
+./a.out
+
+*/
+
+
 #include<stdio.h>
 #include<time.h>
 #include <pthread.h>
@@ -23,16 +33,9 @@ void main(int argc, char *argv[])
 		pthread_create(&tid[i],&attr,pointGen, &Max_Points);
 		}
 	/* now wait for the thread to exit */
-	pthread_join(tid[0], NULL);
-	pthread_join(tid[1], NULL);
-	pthread_join(tid[2], NULL);
-	pthread_join(tid[3], NULL);
-	pthread_join(tid[4], NULL);
-	pthread_join(tid[5], NULL);
-	pthread_join(tid[6], NULL);
-	pthread_join(tid[7], NULL);
-	pthread_join(tid[8], NULL);
-	pthread_join(tid[9], NULL);
+	for(int i = 0; i < 10; i++){
+	pthread_join(tid[i], NULL);
+	}
 	
 	printf("pie = %.4f\n", 4 * (pointsinCircle/Max_Points));
 	pthread_mutex_destroy(&lock);
