@@ -8,13 +8,9 @@
 #include <semaphore.h>
 #include "threadpool.h"
 
-// #define QUEUE_SIZE 10
 #define NUMBER_OF_THREADS 3
 
-// #define TRUE 1
-
 // the work queue
-// task worktodo;
 Queue* Q;
 void q_init(void) {
     Q = malloc(sizeof(Queue));
@@ -24,16 +20,20 @@ void q_init(void) {
 
 // the worker bee
 pthread_t bee[NUMBER_OF_THREADS];
+sem_t thread_sync, q_protect;
 
-// insert a task into the queue
 // returns 0 if successful or 1 otherwise,
 int enqueue(task t) {
     node* tmp = malloc(sizeof(node));
-
+    if(tmp==NULL){
+        puts("Out of memory!!!");
+        return 1;
+    }
     Q->Rear->T = t;
-	Q->Rear->Next = tmp;
-	Q->Rear = tmp;
-	tmp->Next = NULL;
+    Q->Rear->Next = tmp;
+    Q->Rear = tmp;
+    tmp->Next = NULL;
+    // sem_post(&q_protect);
     return 0;
 }
 
@@ -41,6 +41,7 @@ int enqueue(task t) {
 task dequeue() {
     node* tmp = Q -> Front;
     task worktodo = tmp -> T;
+
     Q -> Front = Q -> Front -> Next;
     free(tmp);
 
@@ -54,11 +55,15 @@ int IsEmpty(void) {
 // the worker thread in the thread pool
 void *worker(void *param) {
     task worktodo;
-    while(IsEmpty());   // wait for enqueue
-    // execute the task
-    worktodo = dequeue();
-    execute(worktodo.function, worktodo.data);
 
+    // execute the task
+    sem_wait(&thread_sync);
+    while(IsEmpty());
+    // sem_wait(&q_protect);
+    worktodo = dequeue();
+
+    execute(worktodo.function, worktodo.data);
+    sem_post(&thread_sync);
     pthread_exit(0);
 }
 
@@ -83,10 +88,14 @@ int pool_submit(void (*somefunction)(void *p), void *p) {
 
 // initialize the thread pool
 void pool_init(void) {
-    int i;
+    int i = 0;
     q_init();
-    for(i = 0; i < NUMBER_OF_THREADS; i++)
-        pthread_create(&bee[i],NULL,worker,NULL);
+    sem_init(&thread_sync, 0, 1);
+    // sem_init(&q_protect, 0, 0);
+
+    for(i = 0; i < NUMBER_OF_THREADS; i++){
+        pthread_create(&bee[i%3],NULL,worker,NULL);
+    }
 }
 
 // shutdown the thread pool
