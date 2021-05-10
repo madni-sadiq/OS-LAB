@@ -18,12 +18,6 @@ typedef struct {
 } Queue;
 
 // function prototypes
-void execute(void (*somefunction)(void *p), void *p);
 int pool_submit(void (*somefunction)(void *p), void *p);
-void *worker(void *param);
 void pool_init(void);
 void pool_shutdown(void);
-void q_init(void);
-int enqueue(task t);
-task dequeue();
-int IsEmpty(void);

@@ -5,7 +5,8 @@
 #include <stdio.h>
 #include <unistd.h>
 #include "threadpool.h"
-#define size 10
+#define ARRAY_SIZE 10
+#define TASKS 20
 struct data
 {
     int a;
@@ -24,7 +25,7 @@ void sum_arr(void* param) {
     int* arr = (int*)param;
 
     printf("Sum of ");
-    for(i = 0; i < size; i++){
+    for(i = 0; i < ARRAY_SIZE; i++){
         sum += (arr[i]);
         printf("%d ", (arr[i]));
     }
@@ -41,22 +42,26 @@ int main(void)
 {
     // create some work to do
     struct data work;
-    int array[size], i;
+    int array[ARRAY_SIZE], i;
     work.a = 5;
     work.b = 10;
 
-    for (i = 0; i < size; i++){
+    for (i = 0; i < ARRAY_SIZE; i++){
         array[i] = i;
     }
 
     // initialize the thread pool
     pool_init();
     // submit the work to the queue
-    pool_submit(&do_nothing,NULL);
-    pool_submit(&add,&work);
-    pool_submit(&sum_arr,array);
+    for(i = 0; i < TASKS; i++){
+        if(pool_submit(&do_nothing,NULL)!=0) goto end;
+        if(pool_submit(&add,&work)!=0) goto end;
+        if(pool_submit(&sum_arr,array)!=0) goto end;
+    }
 
+    sleep(TASKS/2 + 1);
     pool_shutdown();
 
-    return 0;
+    end:
+        return 0;
 }

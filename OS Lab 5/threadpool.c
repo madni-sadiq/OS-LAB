@@ -9,18 +9,20 @@
 #include "threadpool.h"
 
 #define NUMBER_OF_THREADS 3
+void execute(void (*somefunction)(void *p), void *p);
 
-// the work queue
+// Global Variables
 Queue* Q;
+pthread_t bee[NUMBER_OF_THREADS];
+sem_t thread_sync, q_protect;
+int shutdown_call = 0;
+
+// initializing the Queue
 void q_init(void) {
     Q = malloc(sizeof(Queue));
     Q -> Front = Q -> Rear = malloc(sizeof(node));
     Q -> Rear -> Next = NULL;
 }
-
-// the worker bee
-pthread_t bee[NUMBER_OF_THREADS];
-sem_t thread_sync, q_protect;
 
 // returns 0 if successful or 1 otherwise,
 int enqueue(task t) {
@@ -33,7 +35,7 @@ int enqueue(task t) {
     Q->Rear->Next = tmp;
     Q->Rear = tmp;
     tmp->Next = NULL;
-    // sem_post(&q_protect);
+    sem_post(&q_protect);
     return 0;
 }
 
@@ -55,14 +57,16 @@ int IsEmpty(void) {
 // the worker thread in the thread pool
 void *worker(void *param) {
     task worktodo;
+    while(1){
+        sem_wait(&thread_sync);
+        sem_wait(&q_protect);
+        if(shutdown_call) break;
+        worktodo = dequeue();
 
-    // execute the task
-    sem_wait(&thread_sync);
-    while(IsEmpty());
-    // sem_wait(&q_protect);
-    worktodo = dequeue();
-
-    execute(worktodo.function, worktodo.data);
+        execute(worktodo.function, worktodo.data);
+        sem_post(&thread_sync);
+    }
+    sem_post(&q_protect);
     sem_post(&thread_sync);
     pthread_exit(0);
 }
@@ -72,6 +76,20 @@ void *worker(void *param) {
  */
 void execute(void (*somefunction)(void *p), void *p) {
     (*somefunction)(p);
+}
+
+void free_mem(void){
+    node* tmp;
+    while(Q->Front->Next){
+        tmp = Q -> Front;
+        Q -> Front = Q -> Front -> Next;
+        free(tmp);
+    }
+    free(Q->Front);
+    free(Q);
+
+    sem_destroy(&q_protect);
+    sem_destroy(&thread_sync);
 }
 
 /**
@@ -91,16 +109,23 @@ void pool_init(void) {
     int i = 0;
     q_init();
     sem_init(&thread_sync, 0, 1);
-    // sem_init(&q_protect, 0, 0);
+    sem_init(&q_protect, 0, 0);
 
     for(i = 0; i < NUMBER_OF_THREADS; i++){
-        pthread_create(&bee[i%3],NULL,worker,NULL);
+        if(pthread_create(&bee[i],NULL,worker,NULL)!=0)
+            puts("Cant create thread!!!");
+            return;
     }
 }
 
 // shutdown the thread pool
 void pool_shutdown(void) {
-    int i;
+    int i, sem_val;
+    shutdown_call = 1;
+    if(sem_getvalue(&q_protect, &sem_val)==0 && sem_val <= 0)
+        sem_post(&q_protect);
+
     for(i = 0; i < NUMBER_OF_THREADS; i++)
         pthread_join(bee[i],NULL);
+    free_mem();
 }
