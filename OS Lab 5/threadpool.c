@@ -112,9 +112,10 @@ void pool_init(void) {
     sem_init(&q_protect, 0, 0);
 
     for(i = 0; i < NUMBER_OF_THREADS; i++){
-        if(pthread_create(&bee[i],NULL,worker,NULL)!=0)
+        if(pthread_create(&bee[i],NULL,worker,NULL)!=0){
             puts("Cant create thread!!!");
             return;
+            }
     }
 }
 
