@@ -5,6 +5,7 @@
 #include <fcntl.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 
 #define INPUT_SIZE 7
 #define PAGE_ENTRIES 256
@@ -19,13 +20,14 @@ signed char *backing;
 struct TLB_unit
 {
 	char pageNo;
-	char frameNo;
+	unsigned int frameNo;
 };
 
 typedef struct
 {
 	struct TLB_unit TLB_tbl[TLB_size];
 	unsigned int size;
+	int hits;
 } TLB_s;
 
 int main(int argc, char *argv[])
@@ -36,6 +38,7 @@ int main(int argc, char *argv[])
 	int offset;
 	int frameno;
 	int i;
+	int iterations;
 
 	TLB_s TLB = {0};
 
@@ -46,16 +49,13 @@ int main(int argc, char *argv[])
 	char *backing_file = "BACKING_STORE.bin";							// backing file for page demanding
 	int backing_fd = open(backing_file, O_RDONLY);						// opening backing file with read only
 	backing = mmap(0, MEM_SIZE, PROT_READ, MAP_PRIVATE, backing_fd, 0); // creating a mapping of backing file as an array
-
+    close(backing_fd);
 	for (i = 0; i < PAGE_ENTRIES; i++)
 	{
 		// assigning every entry of page table a value of -1
 		PageTable[i] = -1;
 	}
-	for (i = 0; i < TLB_size; i++)
-	{
-		TLB.TLB_tbl[i].pageNo = -1;
-	}
+
 	if (argc == 2)
 	{
 		fp = fopen(argv[1], "r"); // opening addresses file in read mode
@@ -68,6 +68,7 @@ int main(int argc, char *argv[])
 
 	while (fgets(input, INPUT_SIZE, fp) != NULL)
 	{
+	    iterations++;
 		addr = atoi(input);			// getting logical address from file
 		pageno = (addr >> 8) & 255; // extracting page number from logical address i.e. bit 15 to bit 8
 		offset = (addr & 255);		// extracting offset from logical address i.e. bit 7 to bit 0
@@ -76,6 +77,7 @@ int main(int argc, char *argv[])
 			if (TLB.TLB_tbl[i].pageNo == pageno)
 			{
 				frameno = TLB.TLB_tbl[i].frameNo;
+				TLB.hits++;
 				break;
 			}
 		}
@@ -104,6 +106,9 @@ int main(int argc, char *argv[])
 													  // printing addresses and value
 		printf("Virtual address: %d Physical address: %d Value: %d\n", addr, physical_addr, value);
 	}
+	fclose(fp);
+	printf("TLB Hit rate: %0.2f\n", (TLB.hits*1.0/iterations)*100);
+	printf("Page-fault rate: %0.2f\n", (page_demand*1.0/iterations)*100);
 
 	return -1;
 }
