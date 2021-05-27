@@ -24,7 +24,7 @@ struct TLB_unit{
 
 typedef struct {
     struct TLB_unit TLB_tbl[TLB_size];
-    unsigned int size = 0;
+    unsigned int size;
 } TLB_s;
 
 int main(int argc, char * argv[]) {
@@ -36,7 +36,7 @@ int main(int argc, char * argv[]) {
 	int frameno;
 	int i;
 
-	TLB_s TLB;
+	TLB_s TLB = {0};
 
 	FILE * fp; // file pointer to open addresses file
 	char input[INPUT_SIZE]; // input buffer
