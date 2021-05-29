@@ -19,15 +19,15 @@ signed char *backing;
 
 struct TLB_unit
 {
-	char pageNo;
-	unsigned int frameNo;
+	unsigned char pageNo;
+	unsigned char frameNo;
 };
 
 typedef struct
 {
 	struct TLB_unit TLB_tbl[TLB_size];
-	unsigned int size;
-	int hits;
+	unsigned char size;
+	unsigned int hits;
 } TLB_s;
 
 int main(int argc, char *argv[])
@@ -38,7 +38,9 @@ int main(int argc, char *argv[])
 	int offset;
 	int frameno;
 	int i;
-	int iterations;
+	int iterations=0;
+	signed char value;
+	unsigned int physical_addr;
 
 	TLB_s TLB = {0};
 
@@ -78,10 +80,10 @@ int main(int argc, char *argv[])
 			{
 				frameno = TLB.TLB_tbl[i].frameNo;
 				TLB.hits++;
-				break;
+				goto mem_hit;
 			}
 		}
-		if (PageTable[pageno] == -1 && i == TLB.size)
+		if (PageTable[pageno] == -1/* && i == TLB.size*/)
 		{ // when page is not found in page table
 			frameno = page_demand++;
 
@@ -93,7 +95,7 @@ int main(int argc, char *argv[])
 			if (TLB.size == 16)
 				TLB.size = 0;
 		}
-		else if (i == TLB.size)
+		else /*if (i == TLB.size)*/
 		{ // when page is availabe in page table
 			frameno = PageTable[pageno];
 			TLB.TLB_tbl[TLB.size].pageNo = pageno;
@@ -101,14 +103,16 @@ int main(int argc, char *argv[])
 			if (TLB.size == 16)
 				TLB.size = 0;
 		}
-		int physical_addr = (frameno * 256) + offset; // replacing frame number in place of page no for physical address
-		signed char value = mem[physical_addr];		  // getting value stored at physical aaddress
+		mem_hit:
+		physical_addr = (frameno * 256) + offset; // replacing frame number in place of page no for physical address
+		value = mem[physical_addr];		  // getting value stored at physical aaddress
 													  // printing addresses and value
-		printf("Virtual address: %d Physical address: %d Value: %d\n", addr, physical_addr, value);
+        printf("Virtual address: %d Physical address: %d Value: %d Page no: %d\n", addr, physical_addr, value, pageno);
 	}
 	fclose(fp);
-	printf("TLB Hit rate: %0.2f\n", (TLB.hits*1.0/iterations)*100);
-	printf("Page-fault rate: %0.2f\n", (page_demand*1.0/iterations)*100);
+	printf("Page demand : %d \nTotal Hits: %d\nTotal Iterations: %d\n", page_demand, TLB.hits, iterations);
+	printf("TLB Hit rate: %.2f\n", (TLB.hits/(1.0*iterations))*100);
+	printf("Page-fault rate: %.2f\n", (page_demand/(1.0*iterations))*100);
 
 	return -1;
 }
