@@ -6,7 +6,6 @@
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-#include <strings.h>
 #include <assert.h>
 
 #define INPUT_SIZE 7
@@ -37,10 +36,11 @@ int main(int argc, char *argv[])
     int frameno;
     int i;
     int iterations = 0;
-    char printBuf[80];
     signed char value;
     unsigned int physical_addr;
     int page_demand = 0; // counter for counting page demands
+    char temp[100];
+    int v_addr, phys_addr, val;
 
     int PageTable[PAGE_ENTRIES];
     signed char mem[MAX_FRAMES * PAGE_SIZE];
@@ -54,7 +54,6 @@ int main(int argc, char *argv[])
     FILE *fp; // file pointer to open addresses file
 
     FILE *correct;
-    char correct_line[80];
 
     int backing_fd = open(backing_file, O_RDONLY); // opening backing file with read only
 
@@ -84,7 +83,11 @@ int main(int argc, char *argv[])
 
     while (fgets(input, INPUT_SIZE, fp) != NULL)
     {
-        fgets(correct_line, 80, correct);
+
+        // Virtual address: 16916 Physical address: 20 Value: 0
+        fscanf(correct, "%s %s %d %s %s %d %s %d",
+               temp, temp, &v_addr, temp, temp,
+               &phys_addr, temp, &val);
         iterations++;
         addr = atoi(input);         // getting logical address from file
         pageno = (addr >> 8) & 255; // extracting page number from logical address i.e. bit 15 to bit 8
@@ -108,10 +111,8 @@ int main(int argc, char *argv[])
                 frameno %= MAX_FRAMES;
                 // Find the previous page table entry for this frame no and reset it
                 for (i = 0; i < PAGE_ENTRIES; i++)
-                {
                     if (PageTable[i] == frameno)
                         PageTable[i] = -1;
-                }
             }
 
             // Copy page from backing file into physical memory
@@ -134,10 +135,8 @@ int main(int argc, char *argv[])
         physical_addr = (frameno * PAGE_SIZE) + offset; // replacing frame number in place of page no for physical address
         value = mem[physical_addr];                     // getting value stored at physical aaddress
                                                         // printing addresses and value
-        snprintf(printBuf, sizeof(printBuf), "Virtual address: %d Physical address: %d Value: %d\n", addr, physical_addr, value);
-        printf("%s", printBuf);
-        printf("%s", correct_line);
-        // assert(strcmp(printBuf, correct_line) == 0);
+        // printf("Virtual address: %d Physical address: %d Value: %d\n", addr, physical_addr, value);
+        assert(val == value);
     }
     fclose(fp);
     fclose(correct);
