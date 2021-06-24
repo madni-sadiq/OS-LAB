@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "simplefs-ops.h": "c",
+        "simplefs-disk.h": "c",
+        "fcntl.h": "c"
+    }
+}
